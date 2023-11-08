@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Drag and Drop File Upload</title>
+    <style>
+      #dropzone {
+        width: 300px;
+        height: 150px;
+        border: 2px dashed #ccc;
+        text-align: center;
+        padding: 50px;
+        margin-bottom: 20px;
+      }
+      #file-input {
+        margin-bottom: 20px;
+      }
+      #file-list {
+        list-style-type: none;
+      }
+      #file-list li {
+        margin-bottom: 10px;
+      }
+    </style>
+    <script>
+      var filesData = [];
+
+      function handleDrop(e) {
+        e.preventDefault();
+        var fileList = e.dataTransfer.files;
+        addFiles(fileList);
+      }
+
+      function handleFiles(files) {
+        addFiles(files);
+      }
+
+      function addFiles(files) {
+        var fileList = document.getElementById('file-list');
+
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          var fileData = {
+            name: file.name,
+            type: file.type,
+            size: file.size
+          };
+          filesData.push(fileData);
+
+          var listItem = document.createElement('li');
+          var filename = document.createTextNode('Name: ' + fileData.name);
+          var filetype = document.createTextNode('Type: ' + fileData.type);
+          var filesize = document.createTextNode('Size: ' + fileData.size + ' bytes');
+          listItem.appendChild(filename);
+          listItem.appendChild(document.createElement('br'));
+          listItem.appendChild(filetype);
+          listItem.appendChild(document.createElement('br'));
+          listItem.appendChild(filesize);
+          fileList.appendChild(listItem);
+        }
+      }
+
+      function saveFiles() {
+        localStorage.setItem('uploadedFiles', JSON.stringify(filesData));
+        alert('Files saved to localStorage!');
+      }
+
+      function filterFiles() {
+        var filterType = document.getElementById('filter-type').value;
+        var filterSize = parseInt(document.getElementById('filter-size').value);
+        var fileList = document.getElementById('file-list');
+        var files = fileList.getElementsByTagName('li');
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          var fileType = file.childNodes[2].nodeValue.replace('Type: ', '');
+          var fileSize = parseInt(file.childNodes[4].nodeValue.replace('Size: ', '').replace(' bytes', ''));
+          if ((filterType !== '' && fileType !== filterType) || (filterSize !== 0 && fileSize < filterSize)) {
+            file.style.display = 'none';
+          } else {
+            file.style.display = 'block';
+          }
+        }
+      }
+      
+    </script>
+  </head>
+  <body>
+    <h1>Drag and Drop File Upload</h1>
+
+    <div id="dropzone" ondrop="handleDrop(event)" ondragover="event.preventDefault()">
+      <p>Перетащите файлы сюда или</p>
+      <input id="file-input" type="file" multiple onchange="handleFiles(this.files)">
+      <label for="file-input">Выбрать файлы</label>
+    </div>
+
+    <div>
+      <h2>Список файлов:</h2>
+      <ul id="file-list"></ul>
+    </div>
+
+    <div>
+      <h2>Фильтрация файлов:</h2>
+      <label for="filter-type">Тип:</label>
+      <input id="filter-type" type="text" onchange="filterFiles()">
+      <label for="filter-size">Минимальный вес файла (в байтах):</label>
+      <input id="filter-size" type="number" min="0" onchange="filterFiles()">
+    </div>
+
+    <div>
+      <button onclick="saveFiles()">Сохранить файлы</button>
+    </div>
+
+    <script>
+      // Проверка наличия сохраненных файлов в localStorage
+      var savedFiles = localStorage.getItem('uploadedFiles');
+      if (savedFiles) {
+        filesData = JSON.parse(savedFiles);
+        displayFiles();
+      }
+
+      function displayFiles() {
+        var fileList = document.getElementById('file-list');
+        fileList.innerHTML = '';
+
+        for (var i = 0; i < filesData.length; i++) {
+          var fileData = filesData[i];
+
+          var listItem = document.createElement('li');
+          var filename = document.createTextNode('Name: ' + fileData.name);
+          var filetype = document.createTextNode('Type: ' + fileData.type);
+          var filesize = document.createTextNode('Size: ' + fileData.size + ' bytes');
+          listItem.appendChild(filename);
+          listItem.appendChild(document.createElement('br'));
+          listItem.appendChild(filetype);
+          listItem.appendChild(document.createElement('br'));
+          listItem.appendChild(filesize);
+          fileList.appendChild(listItem);
+        }
+      }
+    </script>
+  </body>
+</html>
